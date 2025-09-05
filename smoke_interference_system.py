@@ -3,6 +3,20 @@ import matplotlib.pyplot as plt
 from typing import Tuple, List, Dict
 import math
 
+# 配置matplotlib支持中文显示
+plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
+plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
+# 或者使用以下方式（根据系统选择）
+try:
+    plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+except:
+    try:
+        plt.rcParams['font.sans-serif'] = ['PingFang SC']
+    except:
+        plt.rcParams['font.sans-serif'] = ['Helvetica']
+        print("警告：未找到中文字体，图表中的中文可能显示为方框")
+
 
 class SmokeInterferenceSystem:
     """烟幕干扰系统主类"""
