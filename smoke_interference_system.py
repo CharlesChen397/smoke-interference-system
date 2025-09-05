@@ -23,7 +23,7 @@ class SmokeInterferenceSystem:
 
     def __init__(self):
         # 物理常数
-        self.g = 9.8  # 重力加速度 m/s²
+        self.g = 9.83  # 重力加速度 m/s²
         self.smoke_fall_speed = 3.0  # 烟幕云团下沉速度 m/s
         self.smoke_effective_radius = 10.0  # 有效遮蔽半径 m
         self.smoke_effective_duration = 20.0  # 有效遮蔽时间 s
@@ -384,7 +384,7 @@ class SmokeInterferenceSystem:
             if missile_to_target_dist < 100:  # 导弹距离目标100m内停止计算
                 if verbose:
                     print(
-                        f"导弹在 t={t:.2f}s 到达目标附近 (距离{missile_to_target_dist:.1f}m)，停止计算")
+                        f"导弹在 t={t:.4f}s 到达目标附近 (距离{missile_to_target_dist:.4f}m)，停止计算")
                 break
 
             # 计算烟幕位置和半径
@@ -442,7 +442,7 @@ class SmokeInterferenceSystem:
                     interval_duration = end - start
                     total_interval_time += interval_duration
                     print(
-                        f"  区间{i}: {start:.2f}s - {end:.2f}s (持续 {interval_duration:.2f}s)")
+                        f"  区间{i}: {start:.4f}s - {end:.4f}s (持续 {interval_duration:.4f}s)")
 
                     # 打印区间开始和结束时的详细信息
                     if verbose:
@@ -540,6 +540,32 @@ class SmokeInterferenceSystem:
         if norm == 0:
             return np.array([1.0, 0.0, 0.0], dtype=np.float64)  # 默认方向
         return (direction / norm).astype(np.float64)
+
+    def get_drone_direction_to_target(self, start_pos: np.ndarray, target_pos: np.ndarray) -> np.ndarray:
+        """
+        计算无人机从起始位置到目标位置的方向向量（等高飞行，z分量为0）
+
+        Args:
+            start_pos: 起始位置
+            target_pos: 目标位置
+
+        Returns:
+            单位方向向量 [x, y, 0]
+        """
+        start_pos = np.array(start_pos, dtype=np.float64)
+        target_pos = np.array(target_pos, dtype=np.float64)
+
+        # 只考虑水平方向（x, y），忽略z方向
+        direction_2d = np.array([
+            target_pos[0] - start_pos[0],
+            target_pos[1] - start_pos[1],
+            0.0  # z方向分量为0
+        ], dtype=np.float64)
+
+        norm = np.linalg.norm(direction_2d)
+        if norm == 0:
+            return np.array([1.0, 0.0, 0.0], dtype=np.float64)  # 默认方向
+        return (direction_2d / norm).astype(np.float64)
 
     def print_system_info(self):
         """打印系统信息"""

@@ -42,7 +42,7 @@ def solve_problem_1():
     print(f"  真目标: {system.real_target}")
 
     # 计算FY1朝向假目标的方向
-    direction_to_fake = system.get_direction_to_target(
+    direction_to_fake = system.get_drone_direction_to_target(
         fy1_initial_pos, system.fake_target)
     print(f"\nFY1飞行方向向量: {direction_to_fake}")
 
