@@ -12,12 +12,12 @@ class ScenarioConfig:
 
     包含所有物理常量和场景设置参数
     """
-    gravity: float = 9.8                    # 重力加速度 (m/s²)
+    gravity: float = 9.83                    # 重力加速度 (m/s²)
     smoke_cloud_radius: float = 10.0        # 烟幕云团有效遮蔽半径 (m)
     cloud_sink_velocity: float = 3.0        # 云团下沉速度 (m/s)
     missile_velocity: float = 300.0         # 导弹飞行速度 (m/s)
     time_step: float = 0.02                 # 时间离散化步长 (s)
-    evaluation_duration: float = 90.0       # 评估时间窗口长度 (s)
+    evaluation_duration: float = 90.0       # 考虑的总时间窗口长度 (s)
     smoke_effective_duration: float = 20.0  # 单个烟幕弹有效遮蔽持续时间 (s)
 
     # 场景中的关键位置坐标 (m)
@@ -25,6 +25,8 @@ class ScenarioConfig:
         default_factory=lambda: np.array([0, 0, 0]))      # 假目标位置
     real_target_position: np.ndarray = field(
         default_factory=lambda: np.array([0, 200, 0]))     # 真实目标位置
+    real_target_top_position: np.ndarray = field(
+        default_factory=lambda: np.array([0, 200, 10]))     # 真实目标上顶点位置
     missile_initial_position: np.ndarray = field(
         default_factory=lambda: np.array([20000, 0, 2000]))  # 导弹初始位置
 
@@ -48,12 +50,12 @@ class SearchParameters:
     velocities: List[float] = field(default_factory=lambda: [
                                     70, 90, 100, 110, 120, 130, 140])       # 无人机速度选项 (m/s)
     release_times: np.ndarray = field(default_factory=lambda: np.arange(
-        0, 31, 1))                   # 投放时刻范围 (s)
-    fuse_delays: np.ndarray = field(default_factory=lambda: np.arange(
+        0, 31, 0.5))                   # 投放时刻范围 (s)
+    fuse_delays: np.ndarray = field(default_factory=lambda: np.arange(  # 范围可变###############
         0.5, 10.5, 0.5))              # 引信延时范围 (s)
 
     # 搜索策略参数
-    max_candidates_per_uav: int = 40        # 每架无人机保留的最大候选方案数
+    max_candidates_per_uav: int = 50        # 每架无人机保留的最大候选方案数
     fallback_angle_range: float = 30.0     # 回退搜索时的角度范围 (度)
     extended_evaluation_time: float = 120.0  # 兜底搜索时的扩展评估时间 (s)
 
@@ -339,6 +341,9 @@ class SmokeInterferenceOptimizer:
             distance_to_line = self._calculate_point_to_segment_distance(
                 cloud_positions[i], missile_positions[i], self.scenario.real_target_position
             )
+            distance_top_to_line = self._calculate_point_to_segment_distance(
+                cloud_positions[i], missile_positions[i], self.scenario.real_target_top_position
+            )
             if distance_to_line <= self.scenario.smoke_cloud_radius:
                 coverage_mask[i] = True
 
@@ -469,7 +474,7 @@ class SmokeInterferenceOptimizer:
 
     def _save_results_to_excel(self, optimal_combination: Dict[str, Any]) -> None:
         """将结果保存到Excel文件"""
-        excel_filename = 'smoke_interference_optimization_results.xlsx'
+        excel_filename = 'result2.xlsx'
 
         try:
             # 尝试读取现有模板

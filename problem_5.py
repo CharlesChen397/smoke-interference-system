@@ -55,12 +55,15 @@ class UAVSmokeOptimizer:
         }
 
         # 优化参数
-        self.heading_offsets = [-40, -20, 0, 20, 40]     # 航向偏移角度 (度)
-        self.speed_candidates = [90, 120, 140]           # 速度候选值 (m/s)
-        self.release_time_candidates = list(range(0, 22))  # 投放时刻候选 (0-21秒)
-        self.delay_time_candidates = list(range(1, 7))     # 延时起爆候选 (1-6秒)
+        # 航向偏移角度 (度)
+        self.heading_offsets = range(-90, 90, 5)
+        self.speed_candidates = range(70, 140, 5)         # 速度候选值 (m/s)
+        self.release_time_candidates = list(
+            np.arange(0, 22, 0.1))   # 投放时刻候选 (0-21秒)
+        self.delay_time_candidates = list(
+            np.arange(1, 7, 0.1))      # 延时起爆候选 (1-6秒)
 
-        self.max_candidates_per_uav = 60      # 每架UAV保留的最优候选数量
+        self.max_candidates_per_uav = 40      # 每架UAV保留的最优候选数量
         self.max_bombs_per_uav = 3            # 每架UAV最大携弹数
         self.min_release_interval = 1.0       # 同一UAV最小投放间隔 (秒)
 
@@ -606,6 +609,12 @@ class UAVSmokeOptimizer:
         for uav_id in self.uav_positions.keys():
             bomb_count = len(results_by_uav[uav_id])
             print(f"  {uav_id}: {bomb_count} 枚烟幕弹")
+            print(
+                f"    选中投放时刻: {[bomb['release_time'] for bomb in results_by_uav[uav_id]]}")
+            print(
+                f"    选中航向角度: {[round(bomb['heading_degrees'],2) for bomb in results_by_uav[uav_id]]}")
+            print(
+                f"    选中速度: {[bomb['speed'] for bomb in results_by_uav[uav_id]]}")
 
         # 第四步：导出结果
         print("\n第四步：导出结果...")

@@ -13,6 +13,8 @@ drone_name = 'FY1'
 # ---------------------------
 # 1) fitness 函数 (CMA-ES 最小化目标)
 # ---------------------------
+
+
 def fitness(x):
     """
     x = [theta, v, t_drop, tau]
@@ -23,13 +25,15 @@ def fitness(x):
         theta, v, t_drop, tau = x
 
         # 无人机方向（只考虑等高飞行，phi=0）
-        direction = np.array([np.cos(theta), np.sin(theta), 0.0], dtype=np.float64)
+        direction = np.array(
+            [np.cos(theta), np.sin(theta), 0.0], dtype=np.float64)
 
         # 无人机速度向量
         drone_velocity = system.drone_velocity(v, direction)
 
         # 投放位置
-        smoke_release_pos = system.drone_position(drone_name, t_drop, v, direction)
+        smoke_release_pos = system.drone_position(
+            drone_name, t_drop, v, direction)
 
         # 计算遮蔽时间
         cover = system.calculate_smoke_blocking_duration(
@@ -51,7 +55,9 @@ def fitness(x):
 # ---------------------------
 # 2) 主求解函数
 # ---------------------------
-def solve_problem_2_cma():
+
+
+def solve_problem_2_cma(x):
     global system
     system = SmokeInterferenceSystem()
 
@@ -64,12 +70,12 @@ def solve_problem_2_cma():
     ]
 
     # 初始猜测点（中间值）
-    x0 = np.array([1.17352171e-01,1.35653862e+02,3.62537115e-02,7.13716771e-01])
+    x0 = x
     sigma0 = 0.05  # 初始步长
 
     # CMA-ES 参数
     opts = {
-        'bounds': [ [lo for lo, _ in bounds], [hi for _, hi in bounds] ],
+        'bounds': [[lo for lo, _ in bounds], [hi for _, hi in bounds]],
         'popsize': 20,         # 种群大小
         'maxiter': 200,        # 最大迭代次数
         'verb_disp': 1,        # 输出频率
@@ -91,8 +97,10 @@ def solve_problem_2_cma():
 
     return best_x, best_cover
 
+
 # ---------------------------
 # 主入口
 # ---------------------------
 if __name__ == '__main__':
-    solve_problem_2_cma()
+    solve_problem_2_cma([1.17352171e-01, 1.35653862e+02,
+                        3.62537115e-02, 7.13716771e-01])

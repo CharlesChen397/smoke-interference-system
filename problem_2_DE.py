@@ -17,15 +17,19 @@ EXPECTED_D = D
 # ---------------------------
 # 工具：把 x 规范为 1D float ndarray
 # ---------------------------
+
+
 def coerce_x(x):
     """把传入的 x 规范为一维 float ndarray；异常时抛出"""
     a = np.asarray(x, dtype=float).ravel()
     return a
 
+
 # ---------------------------
 # 顶层 fitness（可被 multiprocessing picklable）
 # ---------------------------
 _debug_once = False
+
 
 def fitness(x):
     """
@@ -45,7 +49,8 @@ def fitness(x):
 
     if x_arr.size != EXPECTED_D:
         if not _debug_once:
-            print(f"fitness: x 大小不对，得到 size={x_arr.size}，期待 {EXPECTED_D}；repr(x)={repr(x)}")
+            print(
+                f"fitness: x 大小不对，得到 size={x_arr.size}，期待 {EXPECTED_D}；repr(x)={repr(x)}")
             _debug_once = True
         return 1e6
 
@@ -76,7 +81,8 @@ def fitness(x):
 
     # 计算投放点（假设系统提供 drone_position(drone_name, t_drop, speed, direction)）
     try:
-        smoke_release_pos = system.drone_position(DRONE_NAME, t_drop, v, direction)
+        smoke_release_pos = system.drone_position(
+            DRONE_NAME, t_drop, v, direction)
     except Exception as e:
         if not _debug_once:
             print("fitness: 调用 system.drone_position 出错:", e)
@@ -115,15 +121,19 @@ def fitness(x):
 # ---------------------------
 # 初始化种群函数（确保返回 (NP_total, D) 的 float ndarray）
 # ---------------------------
+
+
 def build_init_population(NP_total, seeds, bounds):
     assert len(bounds) == D
     if NP_total < len(seeds):
         raise ValueError("NP_total must be >= number of seeds")
     pop = []
     for _ in range(NP_total - len(seeds)):
-        indiv = np.array([np.random.uniform(low, high) for (low, high) in bounds], dtype=float)
+        indiv = np.array([np.random.uniform(low, high)
+                         for (low, high) in bounds], dtype=float)
         pop.append(indiv)
-    init_array = np.vstack([np.array(seeds, dtype=float), np.array(pop, dtype=float)])
+    init_array = np.vstack(
+        [np.array(seeds, dtype=float), np.array(pop, dtype=float)])
     if init_array.shape[0] < NP_total:
         extra = NP_total - init_array.shape[0]
         extra_arr = np.vstack([np.array([np.random.uniform(low, high) for (low, high) in bounds], dtype=float)
@@ -136,7 +146,9 @@ def build_init_population(NP_total, seeds, bounds):
 # ---------------------------
 # 主求解函数
 # ---------------------------
-def solve_problem_2(desired_NP_total=80, maxiter=300, workers=1, do_local_refine=True):
+
+
+def solve_problem_2_de(desired_NP_total=80, maxiter=300, workers=1, do_local_refine=True):
     """
     desired_NP_total: 总种群大小（必须能被 D 整除）
     maxiter: DE 的迭代次数（相当于 GA 的 generations）
@@ -158,11 +170,12 @@ def solve_problem_2(desired_NP_total=80, maxiter=300, workers=1, do_local_refine
     ]
     # 构造解析种子（把球心放在导弹路径上不同 t 的近似解）
     seeds = []
-    for theta in [0.02, 0.11, 0.2,0.3]:
+    for theta in [0.02, 0.11, 0.2, 0.3]:
         for v in [80, 100, 120]:
-            for t_drop in [0.1, 0.6,1.2,2.0]:
-                for tau in [0.2, 0.7, 1.2,1.7]:
-                    seeds.append(np.array([theta, v, t_drop, tau], dtype=float))
+            for t_drop in [0.1, 0.6, 1.2, 2.0]:
+                for tau in [0.2, 0.7, 1.2, 1.7]:
+                    seeds.append(
+                        np.array([theta, v, t_drop, tau], dtype=float))
 
     # 确保 NP_total 可被 D 整除
     if desired_NP_total % D != 0:
@@ -172,7 +185,8 @@ def solve_problem_2(desired_NP_total=80, maxiter=300, workers=1, do_local_refine
     init_pop = build_init_population(desired_NP_total, seeds, bounds)
     init_pop = init_pop.astype(float)
 
-    print("D =", D, "NP_total =", desired_NP_total, "popsize_per_dim =", popsize_per_dim)
+    print("D =", D, "NP_total =", desired_NP_total,
+          "popsize_per_dim =", popsize_per_dim)
     print("init_pop.shape =", init_pop.shape, "dtype=", init_pop.dtype)
 
     # 运行 DE（先用 workers=1 以保证稳定）
@@ -189,7 +203,8 @@ def solve_problem_2(desired_NP_total=80, maxiter=300, workers=1, do_local_refine
         polish=False,
         disp=True,
         workers=workers,
-        updating='deferred' if workers != 1 else 'immediate'
+        updating='deferred' if workers != 1 else 'immediate',
+        seed=42,
     )
 
     print("\nDE 最优解 (raw):", result.x)
@@ -212,12 +227,15 @@ def solve_problem_2(desired_NP_total=80, maxiter=300, workers=1, do_local_refine
     print("\n最终解:", best_x, "最终遮蔽时长(s):", -fitness(best_x))
     return best_x
 
+
 # ---------------------------
 # 主入口
 # ---------------------------
 if __name__ == '__main__':
     # 可修改参数：desired_NP_total, maxiter, workers
     # 注意：若你把 workers > 1，子进程会各自 lazy 初始化 system（可能耗时）
-    best = solve_problem_2(desired_NP_total=200, maxiter=100, workers=-1, do_local_refine=True)
-    print("\nProblem 2 solved. Best params (theta [rad], v [m/s], t_drop [s], tau [s]):")
+    best = solve_problem_2_de(desired_NP_total=200,
+                              maxiter=100, workers=-1, do_local_refine=True)
+    print(
+        "\nProblem 2 solved. Best params (theta [rad], v [m/s], t_drop [s], tau [s]):")
     print(best)

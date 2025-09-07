@@ -13,7 +13,7 @@ class PhysicsConstants:
     SMOKE_EFFECTIVE_RADIUS: float = 10.0    # 烟幕有效遮蔽半径 (m)
     SMOKE_SINK_SPEED: float = 3.0           # 烟幕云团下沉速度 (m/s)
     MISSILE_SPEED: float = 300.0            # 导弹飞行速度 (m/s)
-    TIME_STEP: float = 0.05                 # 时间离散化步长 (s)
+    TIME_STEP: float = 0.01                 # 时间离散化步长 (s)
     SMOKE_DURATION: float = 20.0            # 烟幕有效持续时间 (s)
 
 
@@ -69,11 +69,11 @@ class SmokeInterferenceOptimizer:
         self.scenario = scenario
 
         # 优化参数搜索空间
-        self.drone_speeds = [100, 105, 110, 115, 120, 125,
-                             130, 135, 139.5, 140.5, 141]                    # 无人机速度候选 (m/s)
+        self.drone_speeds = [100,   110,  120,
+                             130,  140]                    # 无人机速度候选 (m/s)
         self.drone_heading = np.pi                             # 无人机航向：朝向原点方向
-        self.release_time_grid = np.arange(0, 12.5, 0.5)      # 投放时刻网格 (s)
-        self.fuse_delay_grid = np.arange(0.5, 6.5, 0.5)       # 引信延时网格 (s)
+        self.release_time_grid = np.arange(0, 12.5, 0.25)      # 投放时刻网格 (s)
+        self.fuse_delay_grid = np.arange(0.5, 6.5, 0.25)       # 引信延时网格 (s)
 
         # 时间网格：覆盖整个作战窗口
         self.max_time = 45.0
